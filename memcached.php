@@ -9,6 +9,10 @@
  * @license     http://opensource.org/licenses/mit-license MIT
  * @version     1.2.0
  */
+
+if(!class_exists('Memcached', false))
+{
+
 class Memcached
 {
     // Predefined Constants
@@ -97,7 +101,8 @@ class Memcached
 
     // Defined in php_memcached.c
     const RES_PAYLOAD_FAILURE = -1001;
-
+    
+    const MAX_EXPIRATION = 2592000; // thrity days
 
     /**
      * Dummy option array
@@ -445,6 +450,13 @@ class Memcached
         $valueString = serialize($val);
         $keyString = $this->getKey($key);
 
+        if($expt > self::MAX_EXPIRATION)
+        {
+          $expt -= time();
+          if($expt > self::MAX_EXPIRATION)
+            $expt = self::MAX_EXPIRATION;
+        }
+        
         $this->writeSocket(
             "set $keyString 0 $expt " . strlen($valueString)
         );
@@ -537,4 +549,6 @@ class Memcached
 
         return true;
     }
+}
+
 }
